@@ -14,7 +14,8 @@ export default class RecipientPicker extends Component {
   static propTypes = {
     recipients: PropTypes.array,
     recipientTypes: PropTypes.array.isRequired,
-    users: PropTypes.array,
+     user: PropTypes.object.isRequired,
+     users: PropTypes.array,
     isNewPulse: PropTypes.bool.isRequired,
     onRecipientsChange: PropTypes.func.isRequired,
     autoFocus: PropTypes.bool,
@@ -50,19 +51,41 @@ export default class RecipientPicker extends Component {
   }
 
   render() {
-    const { recipients, users, autoFocus } = this.props;
-    return (
+
+    const { recipients, users, autoFocus ,user} = this.props;
+    const   array  = []
+
+ 
+      /* Récupère les ids des groups où appartient le current user ( le auth User ), en enlevant le group All Users car tout le monde est dedans*/
+    const index = user.group_ids.indexOf(1);
+     const group_ids = user.group_ids
+    if (index > -1) {
+     group_ids.splice(index, 1);
+     }
+ 
+  users.filter(u =>{
+  u.group_ids.some(r => {
+  if(group_ids.indexOf(r)>=0){
+ /* Crée une array de User qui a au moins un group en commun avec le Current User ( All users exclu)*/
+            array.push(u)
+    }
+  }) 
+ })
+
+     return (
       <TokenField
         value={recipients}
         options={
-          users
-            ? users.map(user => ({ label: user.common_name, value: user }))
+     array
+             ? array.map(user => ({ label: user.common_name, value: user }))
             : []
+
+
         }
         onChange={this.handleOnChange}
         placeholder={
           recipients.length === 0
-            ? t`Enter email addresses you'd like this data to go to`
+            ? t`Enter email addresses you'd like this data to go to  `
             : null
         }
         autoFocus={autoFocus && recipients.length === 0}
